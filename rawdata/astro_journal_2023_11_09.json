@@ -1,0 +1,117 @@
+[{
+  "_id": {
+    "$oid": "650b05e26fa4b724641d0044"
+  },
+  "date": "2023-09-20",
+  "time": "16:44",
+  "name": "zorba worms",
+  "amount": "10"
+},
+{
+  "_id": {
+    "$oid": "650b51196fa4b724641d0046"
+  },
+  "date": "2023-09-20",
+  "time": "16:45",
+  "name": "ruccola",
+  "amount": "5"
+},
+{
+  "_id": {
+    "$oid": "650ed5856fa4b724641d0048"
+  },
+  "date": "2023-09-23",
+  "time": "14:09",
+  "name": "zorba worms",
+  "amount": "10"
+},
+{
+  "_id": {
+    "$oid": "651c29a06fa4b724641d004a"
+  },
+  "date": "2023-10-03",
+  "time": "16:38",
+  "name": "zorba worms",
+  "amount": "4"
+},
+{
+  "_id": {
+    "$oid": "6522bfd26fa4b724641d004c"
+  },
+  "date": "2023-10-08",
+  "time": "16:00",
+  "name": "zorba worms",
+  "amount": "6"
+},
+{
+  "_id": {
+    "$oid": "652734e372c99c17d6112d0e"
+  },
+  "date": "2023-10-11",
+  "time": "14:30",
+  "name": "ruccola",
+  "amount": "3"
+},
+{
+  "_id": {
+    "$oid": "652ea4d472c99c17d6112d10"
+  },
+  "date": "2023-10-17",
+  "time": "14:30",
+  "name": "ruccola",
+  "amount": "4"
+},
+{
+  "_id": {
+    "$oid": "652ea4f472c99c17d6112d12"
+  },
+  "date": "2023-10-17",
+  "time": "15:00",
+  "name": "zorba worms",
+  "amount": "4"
+},
+{
+  "_id": {
+    "$oid": "65391e0972c99c17d6112d14"
+  },
+  "date": "2023-10-25",
+  "time": "15:53",
+  "name": "zorba worms",
+  "amount": "15"
+},
+{
+  "_id": {
+    "$oid": "653e0ebc72c99c17d6112d16"
+  },
+  "date": "2023-10-29",
+  "time": "08:50",
+  "name": "ruccola",
+  "amount": "1"
+},
+{
+  "_id": {
+    "$oid": "6548ba0572c99c17d6112d1e"
+  },
+  "date": "2023-11-05",
+  "time": "18:15",
+  "name": "zorba worms",
+  "amount": "4"
+},
+{
+  "_id": {
+    "$oid": "654cb78572c99c17d6112d20"
+  },
+  "date": "2023-11-09",
+  "time": "11:35",
+  "name": "zorba worms",
+  "amount": "5"
+},
+{
+  "_id": {
+    "$oid": "654cb97372c99c17d6112d22"
+  },
+  "date": "2023-11-09",
+  "time": "11:50",
+  "name": "ruccola",
+  "amount": "1"
+}]
