@@ -1,0 +1,66 @@
+{
+    "labels": [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+    ],
+    "datasets": [
+        {
+            "label": "zorba worms",
+            "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                20,
+                29,
+                0,
+                0
+            ],
+            "backgroundColor": [
+                "#FBBB62"
+            ],
+            "borderColor": [
+                "rgba(255,99,132,1)"
+            ],
+            "borderWidth": 1
+        },
+        {
+            "label": "ruccola",
+            "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                5,
+                8,
+                0,
+                0
+            ],
+            "backgroundColor": [
+                "#BEE5B0"
+            ],
+            "borderColor": [
+                "rgba(54, 162, 235, 1)"
+            ],
+            "borderWidth": 1
+        }
+    ]
+}
