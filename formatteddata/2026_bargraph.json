@@ -1,0 +1,38 @@
+{
+    "labels": [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+    ],
+    "datasets": [
+        {
+            "label": "zorba worms",
+            "data": [
+                17,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            "backgroundColor": "#FBBB62",
+            "borderColor": "rgba(255,99,132,1)",
+            "borderWidth": 1
+        }
+    ]
+}

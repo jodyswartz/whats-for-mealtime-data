@@ -15,30 +15,6 @@
     ],
     "datasets": [
         {
-            "label": "zorba worms",
-            "data": [
-                38,
-                76,
-                41,
-                49,
-                22,
-                48,
-                47,
-                25,
-                0,
-                27,
-                0,
-                0
-            ],
-            "backgroundColor": [
-                "#FBBB62"
-            ],
-            "borderColor": [
-                "rgba(255,99,132,1)"
-            ],
-            "borderWidth": 1
-        },
-        {
             "label": "ruccola",
             "data": [
                 6,
@@ -51,15 +27,31 @@
                 0,
                 0,
                 0,
-                0,
+                1,
                 0
             ],
-            "backgroundColor": [
-                "#BEE5B0"
+            "backgroundColor": "#FBBB62",
+            "borderColor": "rgba(255,99,132,1)",
+            "borderWidth": 1
+        },
+        {
+            "label": "zorba worms",
+            "data": [
+                38,
+                76,
+                41,
+                49,
+                22,
+                48,
+                47,
+                25,
+                0,
+                27,
+                8,
+                0
             ],
-            "borderColor": [
-                "rgba(54, 162, 235, 1)"
-            ],
+            "backgroundColor": "#BEE5B0",
+            "borderColor": "rgba(54, 162, 235, 1)",
             "borderWidth": 1
         }
     ]
