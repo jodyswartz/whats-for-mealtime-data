@@ -9,7 +9,7 @@ on:
       - ".github/scripts/validate_rawdata.py"
 
 permissions:
-  contents: write  # allow committing formatted output back to this repo :contentReference[oaicite:3]{index=3}
+  contents: write  # allow committing formatted output back to this repo
 
 jobs:
   validate-and-format:
@@ -19,7 +19,7 @@ jobs:
       - name: Checkout data repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # needed for git diff against "before" SHA :contentReference[oaicite:4]{index=4}
+          fetch-depth: 0  # needed for git diff against "before" SHA
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -31,7 +31,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests
 
-      - name: Find newly added rawdata JSON file(s)
+      - name: Find changed rawdata JSON file(s) and derive year
         id: changes
         shell: bash
         run: |
@@ -45,23 +45,40 @@ jobs:
             BEFORE="$(git rev-parse "${AFTER}^" || true)"
           fi
 
-          ADDED_FILES="$(git diff --name-status "$BEFORE" "$AFTER" \
-            | awk '$1=="A" {print $2}' \
-            | grep -E '^rawdata/.*\.json$' || true)"
+          # Collect Added (A) or Modified (M) rawdata JSON files
+          CHANGED_FILES="$(git diff --name-status "$BEFORE" "$AFTER" \
+            | awk '$1=="A" || $1=="M" {print $2}' \
+            | grep -E '^rawdata/[0-9]{4}/.*\.json$' || true)"
 
-          if [[ -z "$ADDED_FILES" ]]; then
+          if [[ -z "$CHANGED_FILES" ]]; then
             echo "raw_file=" >> "$GITHUB_OUTPUT"
+            echo "year=" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          # If multiple were added, pick the most recent in the list
-          RAW_FILE="$(echo "$ADDED_FILES" | tail -n 1)"
-          echo "raw_file=$RAW_FILE" >> "$GITHUB_OUTPUT"
-          echo "Using raw file: $RAW_FILE"
+          echo "Changed rawdata files:"
+          echo "$CHANGED_FILES"
 
-      - name: Stop if no new rawdata file
+          # If multiple changed, pick the last one in the list
+          RAW_FILE="$(echo "$CHANGED_FILES" | tail -n 1)"
+
+          # Derive YEAR from path: rawdata/<YEAR>/something.json
+          YEAR="$(echo "$RAW_FILE" | cut -d'/' -f2)"
+
+          if ! [[ "$YEAR" =~ ^[0-9]{4}$ ]]; then
+            echo "Could not derive a valid YEAR from path: $RAW_FILE"
+            exit 1
+          fi
+
+          echo "Using raw file: $RAW_FILE"
+          echo "Derived year: $YEAR"
+
+          echo "raw_file=$RAW_FILE" >> "$GITHUB_OUTPUT"
+          echo "year=$YEAR" >> "$GITHUB_OUTPUT"
+
+      - name: Stop if no changed rawdata file
         if: ${{ steps.changes.outputs.raw_file == '' }}
-        run: echo "No new rawdata file added. Nothing to do."
+        run: echo "No rawdata JSON changes detected. Nothing to do."
 
       - name: Validate rawdata JSON
         if: ${{ steps.changes.outputs.raw_file != '' }}
@@ -73,15 +90,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: jodyswartz/whats-for-mealtime-formatter
-          token: ${{ secrets.FORMATTER_REPO_TOKEN }} # required for private repo :contentReference[oaicite:5]{index=5}
+          token: ${{ secrets.FORMATTER_REPO_TOKEN }}
           path: formatter
 
-      - name: Run formatter (current year)
+      - name: Run formatter (year from rawdata path)
         if: ${{ steps.changes.outputs.raw_file != '' }}
         shell: bash
         run: |
           set -euo pipefail
-          YEAR="$(date -u +%Y)"
+          YEAR="${{ steps.changes.outputs.year }}"
           RAW_FILE="${{ steps.changes.outputs.raw_file }}"
           OUT_FILE="formatteddata/${YEAR}_bargraph.json"
 
@@ -99,7 +116,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          YEAR="$(date -u +%Y)"
+          YEAR="${{ steps.changes.outputs.year }}"
           OUT_FILE="formatteddata/${YEAR}_bargraph.json"
 
           git config user.name "github-actions[bot]"
