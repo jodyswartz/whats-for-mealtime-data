@@ -1,0 +1,116 @@
+name: Validate rawdata and generate formatteddata
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "rawdata/**/*.json"
+      - ".github/workflows/format-rawdata.yml"
+      - ".github/scripts/validate_rawdata.py"
+
+permissions:
+  contents: write  # allow committing formatted output back to this repo :contentReference[oaicite:3]{index=3}
+
+jobs:
+  validate-and-format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout data repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # needed for git diff against "before" SHA :contentReference[oaicite:4]{index=4}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Find newly added rawdata JSON file(s)
+        id: changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+
+          # If BEFORE is all zeros (rare), fall back to previous commit
+          if [[ "$BEFORE" =~ ^0+$ ]]; then
+            BEFORE="$(git rev-parse "${AFTER}^" || true)"
+          fi
+
+          ADDED_FILES="$(git diff --name-status "$BEFORE" "$AFTER" \
+            | awk '$1=="A" {print $2}' \
+            | grep -E '^rawdata/.*\.json$' || true)"
+
+          if [[ -z "$ADDED_FILES" ]]; then
+            echo "raw_file=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # If multiple were added, pick the most recent in the list
+          RAW_FILE="$(echo "$ADDED_FILES" | tail -n 1)"
+          echo "raw_file=$RAW_FILE" >> "$GITHUB_OUTPUT"
+          echo "Using raw file: $RAW_FILE"
+
+      - name: Stop if no new rawdata file
+        if: ${{ steps.changes.outputs.raw_file == '' }}
+        run: echo "No new rawdata file added. Nothing to do."
+
+      - name: Validate rawdata JSON
+        if: ${{ steps.changes.outputs.raw_file != '' }}
+        run: |
+          python .github/scripts/validate_rawdata.py "${{ steps.changes.outputs.raw_file }}"
+
+      - name: Checkout private formatter repo
+        if: ${{ steps.changes.outputs.raw_file != '' }}
+        uses: actions/checkout@v4
+        with:
+          repository: jodyswartz/whats-for-mealtime-formatter
+          token: ${{ secrets.FORMATTER_REPO_TOKEN }} # required for private repo :contentReference[oaicite:5]{index=5}
+          path: formatter
+
+      - name: Run formatter (current year)
+        if: ${{ steps.changes.outputs.raw_file != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          YEAR="$(date -u +%Y)"
+          RAW_FILE="${{ steps.changes.outputs.raw_file }}"
+          OUT_FILE="formatteddata/${YEAR}_bargraph.json"
+
+          python formatter/main_yearly.py \
+            --input-file "$RAW_FILE" \
+            --year "$YEAR" \
+            --out "$OUT_FILE" \
+            --bg-file "formatter/backgroundColor.txt" \
+            --border-file "formatter/borderColor.txt"
+
+          echo "Generated $OUT_FILE"
+
+      - name: Commit and push formatted output
+        if: ${{ steps.changes.outputs.raw_file != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          YEAR="$(date -u +%Y)"
+          OUT_FILE="formatteddata/${YEAR}_bargraph.json"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add "$OUT_FILE"
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Auto-generate formatteddata for ${YEAR} [skip ci]"
+          git push
