@@ -9,7 +9,7 @@ on:
       - ".github/scripts/validate_rawdata.py"
 
 permissions:
-  contents: write  # allow committing formatted output back to this repo
+  contents: write
 
 jobs:
   validate-and-format:
@@ -19,7 +19,7 @@ jobs:
       - name: Checkout data repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # needed for git diff against "before" SHA
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -40,12 +40,10 @@ jobs:
           BEFORE="${{ github.event.before }}"
           AFTER="${{ github.sha }}"
 
-          # If BEFORE is all zeros (rare), fall back to previous commit
           if [[ "$BEFORE" =~ ^0+$ ]]; then
             BEFORE="$(git rev-parse "${AFTER}^" || true)"
           fi
 
-          # Collect Added (A) or Modified (M) rawdata JSON files
           CHANGED_FILES="$(git diff --name-status "$BEFORE" "$AFTER" \
             | awk '$1=="A" || $1=="M" {print $2}' \
             | grep -E '^rawdata/[0-9]{4}/.*\.json$' || true)"
@@ -59,10 +57,7 @@ jobs:
           echo "Changed rawdata files:"
           echo "$CHANGED_FILES"
 
-          # If multiple changed, pick the last one in the list
           RAW_FILE="$(echo "$CHANGED_FILES" | tail -n 1)"
-
-          # Derive YEAR from path: rawdata/<YEAR>/something.json
           YEAR="$(echo "$RAW_FILE" | cut -d'/' -f2)"
 
           if ! [[ "$YEAR" =~ ^[0-9]{4}$ ]]; then
@@ -111,6 +106,27 @@ jobs:
 
           echo "Generated $OUT_FILE"
 
+      - name: Write formatteddata/meta.json
+        if: ${{ steps.changes.outputs.raw_file != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          YEAR="${{ steps.changes.outputs.year }}"
+          RAW_FILE="${{ steps.changes.outputs.raw_file }}"
+          NOW="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+          mkdir -p formatteddata
+
+          cat > formatteddata/meta.json <<EOF
+          {
+            "generated_at": "$NOW",
+            "generated_from": "$RAW_FILE",
+            "year": "$YEAR"
+          }
+          EOF
+
+          echo "Wrote formatteddata/meta.json"
+
       - name: Commit and push formatted output
         if: ${{ steps.changes.outputs.raw_file != '' }}
         shell: bash
@@ -122,7 +138,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add "$OUT_FILE"
+          git add "$OUT_FILE" formatteddata/meta.json
 
           if git diff --cached --quiet; then
             echo "No changes to commit."
